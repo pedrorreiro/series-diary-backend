@@ -54,7 +54,7 @@ export class SerieService implements ISerieService {
           posterPath: `https://image.tmdb.org/t/p/w500/${result.poster_path}`,
           firstAirDate: result.first_air_date,
           name: result.name,
-          voteAverage: result.vote_average,
+          voteAverage: Number(result.vote_average.toFixed(1)),
           voteCount: result.vote_count,
         }));
 
