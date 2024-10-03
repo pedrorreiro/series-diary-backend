@@ -6,6 +6,10 @@ export interface ISerieService {
     query: string,
     page: number,
   ): Promise<Either<SerieServiceError, QuerySerieResponse>>;
+
+  getShowById(
+    id: string,
+  ): Promise<Either<SerieServiceError, ShowPayloadResponse>>;
 }
 
 export type QuerySerieRawResponse = {
@@ -47,3 +51,5 @@ export type QuerySerieResponse = {
   totalPages: number;
   totalResults: number;
 };
+
+export type ShowPayloadResponse = object;

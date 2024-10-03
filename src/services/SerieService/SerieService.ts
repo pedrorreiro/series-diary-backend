@@ -8,6 +8,7 @@ import {
   ISerieService,
   QuerySerieRawResponse,
   QuerySerieResponse,
+  ShowPayloadResponse,
 } from './types';
 
 @Injectable()
@@ -70,5 +71,12 @@ export class SerieService implements ISerieService {
     } catch (error) {
       return wrong(new SerieServiceError());
     }
+  }
+
+  async getShowById(
+    id: string,
+  ): Promise<Either<SerieServiceError, ShowPayloadResponse>> {
+    console.log(id);
+    return wrong(new SerieServiceError());
   }
 }
