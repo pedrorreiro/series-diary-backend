@@ -8,6 +8,7 @@ import {
   ISerieService,
   QuerySerieRawResponse,
   QuerySerieResponse,
+  ShowPayloadRawResponse,
   ShowPayloadResponse,
 } from './types';
 
@@ -76,7 +77,41 @@ export class SerieService implements ISerieService {
   async getShowById(
     id: string,
   ): Promise<Either<SerieServiceError, ShowPayloadResponse>> {
-    console.log(id);
+    const url = `/tv/${id}?language=${this.language}`;
+
+    const response = this.request.get(url);
+
+    const rawResponse =
+      await handleAxiosResponse<ShowPayloadRawResponse>(response);
+
+    if (rawResponse.isRight()) {
+      const {
+        backdrop_path,
+        poster_path,
+        overview,
+        number_of_seasons,
+        vote_average,
+        first_air_date,
+        last_air_date,
+        genres,
+      } = rawResponse.value as ShowPayloadRawResponse;
+
+      const mappedResults = {
+        backdropPath: backdrop_path,
+        posterPath: poster_path,
+        overview: overview,
+        numberOfSeasons: number_of_seasons,
+        voteAverage: vote_average,
+        firstAirDate: first_air_date,
+        lastAirDate: last_air_date,
+        totalDuration: 0,
+        genres,
+      };
+
+      return right(mappedResults);
+    }
+  }
+  catch(error) {
     return wrong(new SerieServiceError());
   }
 }
