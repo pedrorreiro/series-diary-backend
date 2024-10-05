@@ -10,6 +10,11 @@ export interface ISerieService {
   getShowById(
     id: string,
   ): Promise<Either<SerieServiceError, ShowPayloadResponse>>;
+
+  getSeasonById(
+    showId: number,
+    season: number,
+  ): Promise<Either<SerieServiceError, Season>>;
 }
 
 export type QuerySerieRawResponse = {
@@ -130,12 +135,72 @@ export type ShowPayloadRawResponse = {
     iso_639_1: string;
     name: string;
   }[];
-  status: string;
+  status: ShowType;
   tagline: string;
-  type: string;
+  type: ShowType;
   vote_average: number;
   vote_count: number;
 };
+
+export type RawSeason = {
+  _id: number;
+  air_date: string;
+  episodes: {
+    air_date: string;
+    episode_number: number;
+    id: number;
+    name: string;
+    overview: string;
+    production_code: string;
+    season_number: number;
+    show_id: number;
+    still_path: string;
+    vote_average: number;
+    vote_count: number;
+  }[];
+  name: string;
+  overview: string;
+  poster_path: string;
+  season_number: number;
+};
+
+export type RawSeasons = {
+  [key in `season/${number}`]: RawSeason;
+}[];
+
+export type Season = {
+  id: number;
+  airDate: string;
+  episodes: {
+    airDate: string;
+    episodeNumber: number;
+    id: number;
+    name: string;
+    overview: string;
+    productionCode: string;
+    seasonNumber: number;
+    showId: number;
+    stillPath: string;
+    voteAverage: number;
+    voteCount: number;
+  }[];
+  name: string;
+  overview: string;
+  posterPath: string;
+  seasonNumber: number;
+};
+
+export type RawShowWithEpisodiesResponse = ShowPayloadRawResponse & RawSeasons;
+
+export enum ShowType {
+  Documentary = 'Documentary',
+  News = 'News',
+  Miniseries = 'Miniseries',
+  Reality = 'Reality',
+  Scripted = 'Scripted',
+  TalkShow = 'Talk Show',
+  Video = 'Video',
+}
 
 export type ShowPayloadResponse = {
   name: string;
@@ -148,6 +213,7 @@ export type ShowPayloadResponse = {
   lastAirDate: string;
   totalDuration: number;
   tagline: string;
+  type: ShowType;
   genres: {
     id: number;
     name: string;

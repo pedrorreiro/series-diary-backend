@@ -8,6 +8,9 @@ import {
   ISerieService,
   QuerySerieRawResponse,
   QuerySerieResponse,
+  RawSeason,
+  RawShowWithEpisodiesResponse,
+  Season,
   ShowPayloadRawResponse,
   ShowPayloadResponse,
 } from './types';
@@ -81,9 +84,8 @@ export class SerieService implements ISerieService {
     const response = this.request.get(url);
 
     const rawResponse =
-      await handleAxiosResponse<ShowPayloadRawResponse>(response);
+      await handleAxiosResponse<RawShowWithEpisodiesResponse>(response);
 
-    console.log({ rawResponse });
     if (rawResponse.isRight()) {
       const {
         name,
@@ -95,6 +97,7 @@ export class SerieService implements ISerieService {
         first_air_date,
         last_air_date,
         tagline,
+        type,
         genres,
         status,
         number_of_episodes,
@@ -110,10 +113,59 @@ export class SerieService implements ISerieService {
         firstAirDate: first_air_date,
         lastAirDate: last_air_date,
         tagline,
+        type,
         totalDuration: 0,
         genres,
         status,
         numberOfEpisodes: number_of_episodes,
+      };
+
+      return right(mappedResults);
+    } else {
+      return wrong(new SerieServiceError());
+    }
+  }
+
+  async getSeasonById(
+    showId: number,
+    seasonNumber: number,
+  ): Promise<Either<SerieServiceError, Season>> {
+    const url = `/tv/${showId}?language=${this.language}&append_to_response=season/${seasonNumber}`;
+
+    const response = this.request.get(url);
+
+    const rawResponse =
+      await handleAxiosResponse<RawShowWithEpisodiesResponse>(response);
+
+    if (rawResponse.isRight()) {
+      const data = rawResponse.value as ShowPayloadRawResponse;
+
+      const season = data[`season/${seasonNumber}`] as RawSeason;
+
+      if (!season) {
+        return wrong(new SerieServiceError('Season not found'));
+      }
+
+      const mappedResults: Season = {
+        id: season._id,
+        airDate: season.air_date,
+        episodes: season.episodes.map((episode) => ({
+          airDate: episode.air_date,
+          episodeNumber: episode.episode_number,
+          id: episode.id,
+          name: episode.name,
+          overview: episode.overview,
+          productionCode: episode.production_code,
+          seasonNumber: episode.season_number,
+          showId: episode.show_id,
+          stillPath: `https://image.tmdb.org/t/p/w500${episode.still_path}`,
+          voteAverage: Number(episode.vote_average.toFixed(1)),
+          voteCount: episode.vote_count,
+        })),
+        name: season.name,
+        overview: season.overview,
+        posterPath: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
+        seasonNumber: season.season_number,
       };
 
       return right(mappedResults);
