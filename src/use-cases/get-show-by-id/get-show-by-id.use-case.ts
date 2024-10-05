@@ -1,11 +1,14 @@
 import { Either } from 'src/errors/either';
 
-import { ISerieService } from '@/services/SerieService/types';
 import { UseCase } from '@core/use-case';
 import { Input } from './get-show-by-id.types';
+import {
+  ShowPayloadResponse,
+  ISerieService,
+} from '@/services/SerieService/types';
 
 export type FailureOutput = Error;
-export type SuccessOutput = any;
+export type SuccessOutput = ShowPayloadResponse;
 
 export class GetShowByIdUseCase extends UseCase<
   Input,
