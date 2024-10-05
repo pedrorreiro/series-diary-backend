@@ -2,10 +2,7 @@ import { Either } from 'src/errors/either';
 
 import { ISerieService } from '@/services/SerieService/types';
 import { UseCase } from '@core/use-case';
-import { Input } from './search-serie.types';
-
-export type FailureOutput = Error;
-export type SuccessOutput = any;
+import { FailureOutput, Input, SuccessOutput } from './search-serie.types';
 
 export class SearchSerieUseCase extends UseCase<
   Input,

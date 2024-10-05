@@ -34,7 +34,6 @@ export class SerieService implements ISerieService {
     page: number,
   ): Promise<Either<SerieServiceError, QuerySerieResponse>> {
     try {
-      console.log(page);
       const url = `/search/tv?query=${query}&language=${this.language}&page=${page}`;
       const response = this.request.get(url);
 
@@ -53,7 +52,7 @@ export class SerieService implements ISerieService {
           originalName: result.original_name,
           overview: result.overview,
           popularity: result.popularity,
-          posterPath: `https://image.tmdb.org/t/p/w500/${result.poster_path}`,
+          posterPath: `https://image.tmdb.org/t/p/w500${result.poster_path}`,
           firstAirDate: result.first_air_date,
           name: result.name,
           voteAverage: Number(result.vote_average.toFixed(1)),
@@ -84,8 +83,10 @@ export class SerieService implements ISerieService {
     const rawResponse =
       await handleAxiosResponse<ShowPayloadRawResponse>(response);
 
+    console.log({ rawResponse });
     if (rawResponse.isRight()) {
       const {
+        name,
         backdrop_path,
         poster_path,
         overview,
@@ -93,25 +94,31 @@ export class SerieService implements ISerieService {
         vote_average,
         first_air_date,
         last_air_date,
+        tagline,
         genres,
+        status,
+        number_of_episodes,
       } = rawResponse.value as ShowPayloadRawResponse;
 
       const mappedResults = {
-        backdropPath: backdrop_path,
-        posterPath: poster_path,
-        overview: overview,
+        name,
+        backdropPath: `https://image.tmdb.org/t/p/w1280${backdrop_path}`,
+        posterPath: `https://image.tmdb.org/t/p/w500${poster_path}`,
+        overview,
         numberOfSeasons: number_of_seasons,
-        voteAverage: vote_average,
+        voteAverage: Number(vote_average.toFixed(1)),
         firstAirDate: first_air_date,
         lastAirDate: last_air_date,
+        tagline,
         totalDuration: 0,
         genres,
+        status,
+        numberOfEpisodes: number_of_episodes,
       };
 
       return right(mappedResults);
+    } else {
+      return wrong(new SerieServiceError());
     }
-  }
-  catch(error) {
-    return wrong(new SerieServiceError());
   }
 }

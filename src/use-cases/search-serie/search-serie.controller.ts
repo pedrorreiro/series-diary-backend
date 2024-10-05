@@ -5,12 +5,8 @@ import { Controller } from 'core/controller';
 import type { Request, Response } from 'express';
 import { BusinessError } from 'src/errors/BusinessError';
 import { UnknownError } from 'src/errors/UnknownError';
-import { Input } from './search-serie.types';
-import {
-  FailureOutput,
-  SearchSerieUseCase,
-  SuccessOutput,
-} from './search-serie.use-case';
+import { FailureOutput, Input, SuccessOutput } from './search-serie.types';
+import { SearchSerieUseCase } from './search-serie.use-case';
 
 @NestController('search-serie')
 export class SearchSerieController extends Controller<

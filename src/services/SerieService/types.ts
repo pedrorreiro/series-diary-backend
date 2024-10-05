@@ -138,6 +138,7 @@ export type ShowPayloadRawResponse = {
 };
 
 export type ShowPayloadResponse = {
+  name: string;
   backdropPath: string;
   posterPath: string;
   overview: string;
@@ -146,8 +147,11 @@ export type ShowPayloadResponse = {
   firstAirDate: string;
   lastAirDate: string;
   totalDuration: number;
+  tagline: string;
   genres: {
     id: number;
     name: string;
   }[];
+  numberOfEpisodes: number;
+  status: string;
 };

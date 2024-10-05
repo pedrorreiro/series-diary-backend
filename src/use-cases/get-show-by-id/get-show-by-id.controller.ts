@@ -1,16 +1,12 @@
-import { Get, Controller as NestController, Query } from '@nestjs/common';
+import { Get, Controller as NestController, Param } from '@nestjs/common';
 
 import { Controller } from 'core/controller';
 
 import type { Request, Response } from 'express';
 import { BusinessError } from 'src/errors/BusinessError';
 import { UnknownError } from 'src/errors/UnknownError';
-import {
-  FailureOutput,
-  GetShowByIdUseCase,
-  SuccessOutput,
-} from './get-show-by-id.use-case';
-import { Input } from './get-show-by-id.types';
+import { FailureOutput, Input, SuccessOutput } from './get-show-by-id.types';
+import { GetShowByIdUseCase } from './get-show-by-id.use-case';
 
 @NestController('get-show-by-id')
 export class GetShowByIdController extends Controller<
@@ -21,11 +17,11 @@ export class GetShowByIdController extends Controller<
   constructor(private readonly useCase: GetShowByIdUseCase) {
     super();
   }
-  @Get()
+  @Get(':id')
   async handle(
     req: Request,
     res: Response,
-    @Query() input: Input,
+    @Param() input: Input,
   ): Promise<SuccessOutput | FailureOutput> {
     let error: BusinessError;
 
