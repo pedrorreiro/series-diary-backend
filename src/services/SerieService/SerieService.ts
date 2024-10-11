@@ -1,4 +1,5 @@
 import { Either, right, wrong } from '@/errors/either';
+import { Duration } from '@/value-objects/duration';
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import { config } from 'config';
@@ -149,19 +150,25 @@ export class SerieService implements ISerieService {
       const mappedResults: Season = {
         id: season._id,
         airDate: season.air_date,
-        episodes: season.episodes.map((episode) => ({
-          airDate: episode.air_date,
-          episodeNumber: episode.episode_number,
-          id: episode.id,
-          name: episode.name,
-          overview: episode.overview,
-          productionCode: episode.production_code,
-          seasonNumber: episode.season_number,
-          showId: episode.show_id,
-          stillPath: `https://image.tmdb.org/t/p/w500${episode.still_path}`,
-          voteAverage: Number(episode.vote_average.toFixed(1)),
-          voteCount: episode.vote_count,
-        })),
+        episodes: season.episodes.map((episode) => {
+          const runtime = (Duration.create(episode.runtime) as Duration)
+            .formatted;
+
+          return {
+            airDate: episode.air_date,
+            episodeNumber: episode.episode_number,
+            id: episode.id,
+            name: episode.name,
+            overview: episode.overview,
+            productionCode: episode.production_code,
+            seasonNumber: episode.season_number,
+            showId: episode.show_id,
+            runtime: runtime,
+            stillPath: `https://image.tmdb.org/t/p/w500${episode.still_path}`,
+            voteAverage: Number(episode.vote_average.toFixed(1)),
+            voteCount: episode.vote_count,
+          };
+        }),
         name: season.name,
         overview: season.overview,
         posterPath: `https://image.tmdb.org/t/p/w500${data.poster_path}`,

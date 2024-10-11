@@ -154,6 +154,7 @@ export type RawSeason = {
     production_code: string;
     season_number: number;
     show_id: number;
+    runtime: number;
     still_path: string;
     vote_average: number;
     vote_count: number;
@@ -179,6 +180,7 @@ export type Season = {
     overview: string;
     productionCode: string;
     seasonNumber: number;
+    runtime: string;
     showId: number;
     stillPath: string;
     voteAverage: number;
