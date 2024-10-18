@@ -78,7 +78,7 @@ export class SerieService implements ISerieService {
   }
 
   async getShowById(
-    id: string,
+    id: number,
   ): Promise<Either<SerieServiceError, ShowPayloadResponse>> {
     const url = `/tv/${id}?language=${this.language}`;
 
@@ -89,6 +89,7 @@ export class SerieService implements ISerieService {
 
     if (rawResponse.isRight()) {
       const {
+        id,
         name,
         backdrop_path,
         poster_path,
@@ -105,11 +106,13 @@ export class SerieService implements ISerieService {
       } = rawResponse.value as ShowPayloadRawResponse;
 
       const mappedResults = {
+        id,
         name,
         backdropPath: `https://image.tmdb.org/t/p/w1280${backdrop_path}`,
         posterPath: `https://image.tmdb.org/t/p/w500${poster_path}`,
         overview,
         numberOfSeasons: number_of_seasons,
+        numberOfEpisodes: number_of_episodes,
         voteAverage: Number(vote_average.toFixed(1)),
         firstAirDate: first_air_date,
         lastAirDate: last_air_date,
@@ -118,7 +121,6 @@ export class SerieService implements ISerieService {
         totalDuration: 0,
         genres,
         status,
-        numberOfEpisodes: number_of_episodes,
       };
 
       return right(mappedResults);
@@ -127,11 +129,21 @@ export class SerieService implements ISerieService {
     }
   }
 
-  async getSeasonById(
+  async getSeasonsByIds(
     showId: number,
-    seasonNumber: number,
-  ): Promise<Either<SerieServiceError, Season>> {
-    const url = `/tv/${showId}?language=${this.language}&append_to_response=season/${seasonNumber}`;
+    seasonNumbers: number[],
+  ): Promise<Either<SerieServiceError, Season[]>> {
+    let url = `/tv/${showId}?language=${this.language}&append_to_response=`;
+
+    seasonNumbers = seasonNumbers.filter((sn) => !isNaN(sn));
+
+    seasonNumbers.forEach((seasonNumber, index) => {
+      url += `season/${seasonNumber}`;
+
+      if (index < seasonNumbers.length - 1) {
+        url += ',';
+      }
+    });
 
     const response = this.request.get(url);
 
@@ -141,41 +153,50 @@ export class SerieService implements ISerieService {
     if (rawResponse.isRight()) {
       const data = rawResponse.value as ShowPayloadRawResponse;
 
-      const season = data[`season/${seasonNumber}`] as RawSeason;
+      let error: SerieServiceError | undefined;
 
-      if (!season) {
-        return wrong(new SerieServiceError('Season not found'));
+      const seasons: Season[] = seasonNumbers.map((seasonNumber) => {
+        const season = data[`season/${seasonNumber}`] as RawSeason;
+
+        if (!season) {
+          error = new SerieServiceError(`Season ${seasonNumber} not found`);
+        }
+
+        return {
+          id: season._id,
+          airDate: season.air_date,
+          episodes: season.episodes.map((episode) => {
+            const runtime = (Duration.create(episode.runtime) as Duration)
+              .formatted;
+
+            return {
+              airDate: episode.air_date,
+              episodeNumber: episode.episode_number,
+              id: episode.id,
+              name: episode.name,
+              overview: episode.overview,
+              productionCode: episode.production_code,
+              seasonNumber: episode.season_number,
+              showId: episode.show_id,
+              seasonId: season._id,
+              runtime: runtime,
+              stillPath: `https://image.tmdb.org/t/p/w500${episode.still_path}`,
+              voteAverage: Number(episode.vote_average.toFixed(1)),
+              voteCount: episode.vote_count,
+            };
+          }),
+          name: season.name,
+          overview: season.overview,
+          posterPath: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
+          seasonNumber: season.season_number,
+        };
+      });
+
+      if (error) {
+        return wrong(error);
       }
 
-      const mappedResults: Season = {
-        id: season._id,
-        airDate: season.air_date,
-        episodes: season.episodes.map((episode) => {
-          const runtime = (Duration.create(episode.runtime) as Duration)
-            .formatted;
-
-          return {
-            airDate: episode.air_date,
-            episodeNumber: episode.episode_number,
-            id: episode.id,
-            name: episode.name,
-            overview: episode.overview,
-            productionCode: episode.production_code,
-            seasonNumber: episode.season_number,
-            showId: episode.show_id,
-            runtime: runtime,
-            stillPath: `https://image.tmdb.org/t/p/w500${episode.still_path}`,
-            voteAverage: Number(episode.vote_average.toFixed(1)),
-            voteCount: episode.vote_count,
-          };
-        }),
-        name: season.name,
-        overview: season.overview,
-        posterPath: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
-        seasonNumber: season.season_number,
-      };
-
-      return right(mappedResults);
+      return right(seasons);
     } else {
       return wrong(new SerieServiceError());
     }

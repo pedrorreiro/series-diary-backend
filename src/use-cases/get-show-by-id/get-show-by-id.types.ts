@@ -6,5 +6,5 @@ export type SuccessOutput = ShowPayloadResponse;
 
 export class Input {
   @IsNotEmpty()
-  id: string;
+  id: number;
 }

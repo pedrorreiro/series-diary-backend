@@ -25,10 +25,10 @@ export class Duration extends AbstractObjetoValor<number> {
       formattedString += `${days}d `;
     }
     if (hours > 0) {
-      formattedString += `${hours}h `;
+      formattedString += `${hours} h `;
     }
     if (minutes > 0 || formattedString === '') {
-      formattedString += `${minutes}m`;
+      formattedString += `${minutes} min`;
     }
 
     return formattedString.trim();

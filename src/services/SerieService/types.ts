@@ -8,13 +8,13 @@ export interface ISerieService {
   ): Promise<Either<SerieServiceError, QuerySerieResponse>>;
 
   getShowById(
-    id: string,
+    id: number,
   ): Promise<Either<SerieServiceError, ShowPayloadResponse>>;
 
-  getSeasonById(
+  getSeasonsByIds(
     showId: number,
-    season: number,
-  ): Promise<Either<SerieServiceError, Season>>;
+    seasonNumbers: number[],
+  ): Promise<Either<SerieServiceError, Season[]>>;
 }
 
 export type QuerySerieRawResponse = {
@@ -205,6 +205,7 @@ export enum ShowType {
 }
 
 export type ShowPayloadResponse = {
+  id: number;
   name: string;
   backdropPath: string;
   posterPath: string;
