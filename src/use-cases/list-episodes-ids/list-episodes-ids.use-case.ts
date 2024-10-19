@@ -1,6 +1,6 @@
 import { Either, right, wrong } from 'src/errors/either';
 
-import { ISerieService } from '@/services/SerieService/types';
+import { ISerieService, Season } from '@/services/SerieService/types';
 import { UseCase } from '@core/use-case';
 import { FailureOutput, Input, SuccessOutput } from './list-episodes-ids.types';
 
@@ -14,8 +14,10 @@ export class ListEpisodesIdsUseCase extends UseCase<
   }
 
   async execute(input: Input): Promise<Either<FailureOutput, SuccessOutput>> {
-    let seasonNumbersList: number[] = input.seasonNumbers;
-    if (!input.seasonNumbers) {
+    let seasonNumbersList = input.seasonNumbers || [];
+    let numberOfSeasons = seasonNumbersList.length;
+
+    if (seasonNumbersList.length === 0) {
       const getShowDetailsResult = await this.serieService.getShowById(
         input.showId,
       );
@@ -24,22 +26,35 @@ export class ListEpisodesIdsUseCase extends UseCase<
         return wrong(getShowDetailsResult.value);
       }
 
+      numberOfSeasons = getShowDetailsResult.value.numberOfSeasons;
       seasonNumbersList = Array.from(
-        { length: getShowDetailsResult.value.numberOfSeasons },
+        { length: numberOfSeasons },
         (_, i) => i + 1,
       );
     }
 
-    const result = await this.serieService.getSeasonsByIds(
-      input.showId,
-      seasonNumbersList,
+    const maxSeasonsPerCall = 20;
+    const totalCalls = Math.ceil(numberOfSeasons / maxSeasonsPerCall);
+
+    const callPromises = Array.from({ length: totalCalls }, (_, i) =>
+      this.serieService.getSeasonsByIds(
+        input.showId,
+        seasonNumbersList.slice(
+          i * maxSeasonsPerCall,
+          (i + 1) * maxSeasonsPerCall,
+        ),
+      ),
     );
 
-    if (result.isWrong()) {
-      return wrong(result.value);
+    const results = await Promise.all(callPromises);
+
+    const failedResult = results.find((result) => result.isWrong());
+    if (failedResult) {
+      return wrong(failedResult.value);
     }
 
-    const episodesIds = result.value.flatMap((season) =>
+    const seasons = results.flatMap((result) => result.value as Season[]);
+    const episodesIds = seasons.flatMap((season) =>
       season.episodes.map((episode) => episode.id),
     );
 
