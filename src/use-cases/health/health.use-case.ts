@@ -13,6 +13,6 @@ export class HealthUseCase extends UseCase<
   }
 
   async execute(): Promise<Either<FailureOutput, SuccessOutput>> {
-    return right('OK');
+    return right('Ping');
   }
 }
