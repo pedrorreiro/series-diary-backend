@@ -20,5 +20,26 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  @@map("users")
+  @@map("user")
+}
+
+model Show {
+  id               Int      @id
+  name             String
+  overview         String
+  tagline          String
+  numberOfEpisodes Int      @map("number_of_episodes")
+  numberOfSeasons  Int      @map("number_of_seasons")
+  firstAirDate     DateTime @map("first_air_date")
+  lastAirDate      DateTime @map("last_air_date")
+  posterUrl        String   @map("poster_url")
+  backdropUrl      String   @map("backdrop_url")
+  voteAverage      Float    @map("vote_average")
+  status           String
+  genres           Json
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("show")
 }
